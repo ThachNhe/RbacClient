@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
+import ProjectGenerator from "./generator/projectGenerator";
 
 export default function Home() {
   return (
     <div>
-      <Button>Click me</Button>
+      <ProjectGenerator />
     </div>
   );
 }
