@@ -48,7 +48,7 @@ export function MainNav() {
         className="text-xl font-bold text-primary mr-8 flex items-center"
       >
         <Code className="mr-2 h-6 w-6" />
-        NestJS Utility
+        RBAC Application
       </Link>
 
       {routes.map((route) => (

@@ -7,8 +7,8 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "NestJS Utility Application",
-  description: "Công cụ hỗ trợ phát triển dự án NestJS",
+  title: "RBAC Application",
+  description: "A power tool help develops NestJS",
 };
 
 export default function RootLayout({
