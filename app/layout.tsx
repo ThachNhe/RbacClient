@@ -26,14 +26,7 @@ export default function RootLayout({
             </div>
           </header>
           <main className="flex-1">{children}</main>
-          <footer className="border-t py-6 bg-muted">
-            {/* <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
-              <p className="text-center text-sm text-muted-foreground md:text-left">
-                &copy; {new Date().getFullYear()} NestJS Utility Application. Đã
-                đăng ký bản quyền.
-              </p>
-            </div> */}
-          </footer>
+          <footer className=""></footer>
         </div>
         <Toaster />
       </body>

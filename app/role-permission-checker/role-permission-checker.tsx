@@ -1,42 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { uploadMultipleFiles } from "@/lib/api";
+import { formatBytes } from "@/lib/utils";
+import { RolePermissionCheckResult } from "@/types";
 import {
-  Loader2,
-  Upload,
   AlertCircle,
-  CheckCircle,
-  XCircle,
   FileArchive,
   FileCode,
+  Loader2,
   Shield,
+  Upload,
+  XCircle,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { formatBytes } from "@/lib/utils";
-import { RolePermission, RolePermissionCheckResult } from "@/types";
+import { PermissionRuleTable } from "./permission-rule-table";
 
 export function RolePermissionChecker() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -87,89 +79,18 @@ export function RolePermissionChecker() {
       setIsLoading(true);
       setUploadProgress(0);
 
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 95) {
-            clearInterval(progressInterval);
-            return prev;
-          }
-          return prev + 5;
-        });
-      }, 200);
+      const response = await uploadMultipleFiles<RolePermissionCheckResult>(
+        "/role-permission/check",
+        {
+          file: configFile,
+          projectFile: projectFile,
+        },
+        (percentage) => setUploadProgress(percentage)
+      );
 
-      // Simulate API call with delay
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      clearInterval(progressInterval);
-      setUploadProgress(100);
+      console.log("check response: ", response);
 
-      // In a real scenario, you would upload the files
-      // const formData = new FormData()
-      // formData.append('projectFile', projectFile)
-      // formData.append('configFile', configFile)
-
-      // const response = await fetch('/api/check-role-permission', {
-      //   method: 'POST',
-      //   body: formData,
-      //   onUploadProgress: (progressEvent) => {
-      //     if (progressEvent.total) {
-      //       const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-      //       setUploadProgress(percentCompleted)
-      //     }
-      //   }
-      // })
-
-      // if (!response.ok) throw new Error('Failed to check role-permission conflicts')
-      // const data = await response.json()
-
-      // Simulate results for demonstration
-      const mockResults: RolePermissionCheckResult = {
-        missingPermissions: [
-          {
-            roleId: "admin",
-            permissionId: "user:delete",
-            roleName: "Administrator",
-            permissionName: "Delete User",
-          },
-          {
-            roleId: "editor",
-            permissionId: "post:publish",
-            roleName: "Content Editor",
-            permissionName: "Publish Post",
-          },
-        ],
-        extraPermissions: [
-          {
-            roleId: "viewer",
-            permissionId: "post:edit",
-            roleName: "Content Viewer",
-            permissionName: "Edit Post",
-          },
-        ],
-        validPermissions: [
-          {
-            roleId: "admin",
-            permissionId: "user:create",
-            roleName: "Administrator",
-            permissionName: "Create User",
-          },
-          {
-            roleId: "editor",
-            permissionId: "post:edit",
-            roleName: "Content Editor",
-            permissionName: "Edit Post",
-          },
-          {
-            roleId: "viewer",
-            permissionId: "post:read",
-            roleName: "Content Viewer",
-            permissionName: "Read Post",
-          },
-        ],
-      };
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setResults(mockResults);
+      setResults(response);
       toast.success("Role-permission check completed");
     } catch (error) {
       toast.error("Failed to check conflicts", {
@@ -309,47 +230,36 @@ export function RolePermissionChecker() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Analysis Complete</AlertTitle>
             <AlertDescription>
-              Found {results.missingPermissions.length} missing permissions and{" "}
-              {results.extraPermissions.length} extra permissions.
+              Found {results.lackRule.length} missing rules and{" "}
+              {results.redundantRule.length} redundant rules.
             </AlertDescription>
           </Alert>
         )}
 
         {results && (
-          <Tabs defaultValue="missing" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="missing" className="flex items-center gap-2">
+          <Tabs defaultValue="lack" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="lack" className="flex items-center gap-2">
                 <XCircle className="h-4 w-4 text-red-500" />
-                Missing ({results.missingPermissions.length})
+                Missing Rules ({results.lackRule.length})
               </TabsTrigger>
-              <TabsTrigger value="extra" className="flex items-center gap-2">
+              <TabsTrigger
+                value="redundant"
+                className="flex items-center gap-2"
+              >
                 <AlertCircle className="h-4 w-4 text-amber-500" />
-                Extra ({results.extraPermissions.length})
-              </TabsTrigger>
-              <TabsTrigger value="valid" className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                Valid ({results.validPermissions.length})
+                Redundant Rules ({results.redundantRule.length})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="missing" className="max-h-96 overflow-auto">
-              <RolePermissionTable
-                permissions={results.missingPermissions}
-                type="missing"
-              />
+            <TabsContent value="lack" className="max-h-96 overflow-auto">
+              <PermissionRuleTable rules={results.lackRule} type="lack" />
             </TabsContent>
 
-            <TabsContent value="extra" className="max-h-96 overflow-auto">
-              <RolePermissionTable
-                permissions={results.extraPermissions}
-                type="extra"
-              />
-            </TabsContent>
-
-            <TabsContent value="valid" className="max-h-96 overflow-auto">
-              <RolePermissionTable
-                permissions={results.validPermissions}
-                type="valid"
+            <TabsContent value="redundant" className="max-h-96 overflow-auto">
+              <PermissionRuleTable
+                rules={results.redundantRule}
+                type="redundant"
               />
             </TabsContent>
           </Tabs>
@@ -372,55 +282,5 @@ export function RolePermissionChecker() {
         </Button>
       </CardFooter>
     </Card>
-  );
-}
-
-function RolePermissionTable({
-  permissions,
-  type,
-}: {
-  permissions: RolePermission[];
-  type: "missing" | "extra" | "valid";
-}) {
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Role ID</TableHead>
-            <TableHead>Role Name</TableHead>
-            <TableHead>Permission ID</TableHead>
-            <TableHead>Permission Name</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {permissions.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={4}
-                className="text-center text-muted-foreground"
-              >
-                No {type} permissions found
-              </TableCell>
-            </TableRow>
-          ) : (
-            permissions.map((permission, index) => (
-              <TableRow
-                key={`${permission.roleId}-${permission.permissionId}-${index}`}
-              >
-                <TableCell>{permission.roleId}</TableCell>
-                <TableCell>{permission.roleName}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="font-mono">
-                    {permission.permissionId}
-                  </Badge>
-                </TableCell>
-                <TableCell>{permission.permissionName}</TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
   );
 }

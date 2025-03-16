@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,24 +9,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Database, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { post } from "@/lib/api";
 import { DatabaseConnection } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle2, Database, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
 const formSchema = z.object({
   ipAddress: z.string().min(1, { message: "IP address is required" }),
@@ -56,7 +56,7 @@ export function DbConnectionForm({
       username: "",
       password: "",
       database: "",
-      port: 3306,
+      port: 4000,
     },
   });
 
@@ -66,17 +66,23 @@ export function DbConnectionForm({
       setStatus(null);
 
       // Simulate API call to test database connection
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Actual API call would be something like:
-      // const response = await fetch('/api/test-connection', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(values)
-      // })
+      // const response = await fetch("/api/database/connect", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(values),
+      // });
+      console.log("check values", values);
+      const response = await post("/api/database/connect", values);
 
-      // if (!response.ok) throw new Error('Failed to connect to database')
-      // const data = await response.json()
+      console.log("response", response);
+
+      // console.log("response", response.json());
+
+      // if (!response.ok) throw new Error("Failed to connect to database");
+      // const data = await response.json();
 
       setIsConnected(true);
       setStatus({

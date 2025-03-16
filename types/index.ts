@@ -52,3 +52,15 @@ export interface RolePermissionCheckResult {
   extraPermissions: RolePermission[];
   validPermissions: RolePermission[];
 }
+
+export interface PermissionRule {
+  role: string;
+  action: string;
+  resource: string;
+  condition: string;
+}
+
+export interface RolePermissionCheckResult {
+  redundantRule: PermissionRule[];
+  lackRule: PermissionRule[];
+}

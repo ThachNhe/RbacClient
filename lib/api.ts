@@ -155,6 +155,39 @@ export async function generateAndDownloadProject(
   }
 }
 
+export async function uploadMultipleFiles<T>(
+  url: string,
+  files: Record<string, File>,
+  onProgress?: (percentage: number) => void
+): Promise<T> {
+  try {
+    const formData = new FormData();
+
+    Object.entries(files).forEach(([fieldName, file]) => {
+      formData.append(fieldName, file);
+    });
+
+    const response = await apiClient.post<ApiResponse<T>>(url, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentCompleted);
+        }
+      },
+    });
+
+    return response.data.data;
+  } catch (error) {
+    handleApiError(error);
+    throw error;
+  }
+}
+
 function handleApiError(error: unknown): void {
   if (axios.isAxiosError(error)) {
     if (error.response) {

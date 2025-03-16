@@ -31,3 +31,23 @@ export function formatBytes(bytes: number, decimals = 2): string {
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 }
+
+export function getActionBadgeVariant(
+  action: string
+): "default" | "destructive" | "outline" | "secondary" {
+  const lowerAction = action.toLowerCase();
+
+  switch (lowerAction) {
+    case "get":
+      return "secondary";
+    case "post":
+      return "default";
+    case "put":
+    case "patch":
+      return "outline";
+    case "delete":
+      return "destructive";
+    default:
+      return "outline";
+  }
+}
