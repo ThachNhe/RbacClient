@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { post } from "@/lib/api";
-import { DatabaseConnection } from "@/types";
+import { ApiResponse, DatabaseConnection } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, Database, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -32,7 +32,7 @@ const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
   password: z.string(),
   database: z.string().min(1, { message: "Database name is required" }),
-  port: z.coerce.number().optional(),
+  port: z.string().optional(),
 });
 
 type FormStatus = {
@@ -56,33 +56,29 @@ export function DbConnectionForm({
       username: "",
       password: "",
       database: "",
-      port: 4000,
+      port: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const trimmedValues = {
+        ...values,
+        ipAddress: values.ipAddress.trim(),
+        username: values.username.trim(),
+        password: values.password,
+        database: values.database.trim(),
+        port: values.port?.trim(),
+      };
       setIsLoading(true);
       setStatus(null);
 
-      // Simulate API call to test database connection
-      // await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Actual API call would be something like:
-      // const response = await fetch("/api/database/connect", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(values),
-      // });
       console.log("check values", values);
-      const response = await post("/api/database/connect", values);
 
-      console.log("response", response);
-
-      // console.log("response", response.json());
-
-      // if (!response.ok) throw new Error("Failed to connect to database");
-      // const data = await response.json();
+      const response: ApiResponse = await post(
+        "/api/database/connect",
+        trimmedValues
+      );
 
       setIsConnected(true);
       setStatus({
@@ -95,6 +91,7 @@ export function DbConnectionForm({
       // Notify parent component about successful connection
       onConnect(values);
     } catch (error) {
+      console.error("Connection error:", error);
       setIsConnected(false);
       setStatus({
         type: "error",
@@ -174,7 +171,7 @@ export function DbConnectionForm({
                   <FormItem>
                     <FormLabel>Port</FormLabel>
                     <FormControl>
-                      <Input placeholder="3306" type="number" {...field} />
+                      <Input placeholder="3306" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

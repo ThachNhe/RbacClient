@@ -17,7 +17,7 @@ export interface DatabaseConnection {
   username: string;
   password: string;
   database: string;
-  port?: number;
+  port?: string;
 }
 
 export interface ConnectionStatus {
@@ -27,16 +27,15 @@ export interface ConnectionStatus {
 
 // User-Role related types
 export interface UserRole {
-  userId: string;
-  roleId: string;
-  username?: string;
-  roleName?: string;
+  username: string;
+  role: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface ConflictResult {
   missing: UserRole[];
   extra: UserRole[];
-  valid: UserRole[];
 }
 
 // Role-Permission related types
@@ -63,4 +62,11 @@ export interface PermissionRule {
 export interface RolePermissionCheckResult {
   redundantRule: PermissionRule[];
   lackRule: PermissionRule[];
+}
+
+export interface ApiResponse {
+  success: boolean;
+  status: number;
+  data?: any;
+  message?: string;
 }

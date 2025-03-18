@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,28 +9,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Loader2,
-  Upload,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { uploadFile } from "@/lib/api";
+import { ApiResponse, ConflictResult, DatabaseConnection } from "@/types";
+import { AlertCircle, Loader2, XCircle } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { ConflictResult, DatabaseConnection, UserRole } from "@/types";
+import { UserRoleTable } from "./user-role-table";
 
 export function UserRoleConflictChecker({
   connection,
@@ -55,60 +43,24 @@ export function UserRoleConflictChecker({
     try {
       setIsLoading(true);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // In a real scenario, you would upload the file and send the connection details
-      // const formData = new FormData()
-      // formData.append('file', csvFile)
-      // formData.append('connection', JSON.stringify(connection))
+      const response: ApiResponse = await uploadFile(
+        "/user-role/check",
+        csvFile
+      );
 
-      // const response = await fetch('/api/check-user-role', {
-      //   method: 'POST',
-      //   body: formData
-      // })
+      // console.log("repsonse.sucesse", response.success);
 
-      // if (!response.ok) throw new Error('Failed to check user-role conflicts')
-      // const data = await response.json()
+      // console.log("check user-role response", response);
 
-      // Simulate results for demonstration
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
       const mockResults: ConflictResult = {
-        missing: [
-          {
-            userId: "user1",
-            roleId: "admin",
-            username: "john_doe",
-            roleName: "Administrator",
-          },
-          {
-            userId: "user3",
-            roleId: "editor",
-            username: "jane_smith",
-            roleName: "Content Editor",
-          },
-        ],
-        extra: [
-          {
-            userId: "user2",
-            roleId: "moderator",
-            username: "bob_jones",
-            roleName: "Forum Moderator",
-          },
-        ],
-        valid: [
-          {
-            userId: "user4",
-            roleId: "viewer",
-            username: "alice_wonder",
-            roleName: "Content Viewer",
-          },
-          {
-            userId: "user5",
-            roleId: "supporter",
-            username: "charlie_brown",
-            roleName: "Support Staff",
-          },
-        ],
+        missing: response?.data?.lackingPermissions,
+        extra: response?.data?.redundantPermissions,
       };
 
       setResults(mockResults);
@@ -166,7 +118,7 @@ export function UserRoleConflictChecker({
 
         {results && (
           <Tabs defaultValue="missing" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="missing" className="flex items-center gap-2">
                 <XCircle className="h-4 w-4 text-red-500" />
                 Missing ({results.missing.length})
@@ -174,10 +126,6 @@ export function UserRoleConflictChecker({
               <TabsTrigger value="extra" className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-amber-500" />
                 Extra ({results.extra.length})
-              </TabsTrigger>
-              <TabsTrigger value="valid" className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                Valid ({results.valid.length})
               </TabsTrigger>
             </TabsList>
 
@@ -188,57 +136,9 @@ export function UserRoleConflictChecker({
             <TabsContent value="extra" className="max-h-96 overflow-auto">
               <UserRoleTable userRoles={results.extra} type="extra" />
             </TabsContent>
-
-            <TabsContent value="valid" className="max-h-96 overflow-auto">
-              <UserRoleTable userRoles={results.valid} type="valid" />
-            </TabsContent>
           </Tabs>
         )}
       </CardContent>
     </Card>
-  );
-}
-
-function UserRoleTable({
-  userRoles,
-  type,
-}: {
-  userRoles: UserRole[];
-  type: "missing" | "extra" | "valid";
-}) {
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>User ID</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>Role ID</TableHead>
-            <TableHead>Role Name</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {userRoles.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={4}
-                className="text-center text-muted-foreground"
-              >
-                No {type} user-roles found
-              </TableCell>
-            </TableRow>
-          ) : (
-            userRoles.map((userRole, index) => (
-              <TableRow key={`${userRole.userId}-${userRole.roleId}-${index}`}>
-                <TableCell>{userRole.userId}</TableCell>
-                <TableCell>{userRole.username}</TableCell>
-                <TableCell>{userRole.roleId}</TableCell>
-                <TableCell>{userRole.roleName}</TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
   );
 }

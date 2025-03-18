@@ -11,6 +11,7 @@ const apiClient = axios.create({
 
 interface ApiResponse<T> {
   data: T;
+  status: number;
   success: boolean;
   message?: string;
 }
@@ -52,7 +53,7 @@ export async function uploadFile<T>(
   url: string,
   file: File,
   onProgress?: (percentage: number) => void
-): Promise<T> {
+): Promise<ApiResponse<T>> {
   try {
     const formData = new FormData();
     formData.append("file", file);
@@ -71,7 +72,7 @@ export async function uploadFile<T>(
       },
     });
 
-    return response.data.data;
+    return response.data;
   } catch (error) {
     handleApiError(error);
     throw error;
