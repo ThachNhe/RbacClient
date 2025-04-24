@@ -15,7 +15,7 @@ export default function Home() {
     <div className="page-container">
       <div className="flex flex-col items-center space-y-4 text-center mb-12">
         <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">
-          RBAC Application
+          VRbac Application
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground">
           A tool to support the development of NestJS projects

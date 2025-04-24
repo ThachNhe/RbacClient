@@ -241,14 +241,14 @@ export function RolePermissionChecker() {
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="lack" className="flex items-center gap-2">
                 <XCircle className="h-4 w-4 text-red-500" />
-                Missing Rules ({results.lackRule.length})
+                Lack ({results.lackRule.length})
               </TabsTrigger>
               <TabsTrigger
                 value="redundant"
                 className="flex items-center gap-2"
               >
                 <AlertCircle className="h-4 w-4 text-amber-500" />
-                Redundant Rules ({results.redundantRule.length})
+                Redundant ({results.redundantRule.length})
               </TabsTrigger>
             </TabsList>
 

@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "RBAC Application",
+  title: "VRbac Application",
   description: "A power tool help develops NestJS",
 };
 
