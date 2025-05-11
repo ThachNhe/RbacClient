@@ -34,6 +34,8 @@ export function UserRoleConflictChecker({
     }
   };
 
+  // console.log("results", results?.extra);
+
   async function handleCheck() {
     if (!csvFile) {
       toast.error("Please upload a CSV file first");
@@ -49,10 +51,6 @@ export function UserRoleConflictChecker({
         "/user-role/check",
         csvFile
       );
-
-      // console.log("repsonse.sucesse", response.success);
-
-      // console.log("check user-role response", response);
 
       if (!response.success) {
         throw new Error(response.message);
@@ -121,11 +119,11 @@ export function UserRoleConflictChecker({
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="missing" className="flex items-center gap-2">
                 <XCircle className="h-4 w-4 text-red-500" />
-                Missing ({results.missing.length})
+                Lack ({results.missing.length})
               </TabsTrigger>
               <TabsTrigger value="extra" className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-amber-500" />
-                Extra ({results.extra.length})
+                Redundant ({results.extra.length})
               </TabsTrigger>
             </TabsList>
 

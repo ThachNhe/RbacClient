@@ -17,6 +17,7 @@ export function UserRoleTable({
   userRoles: UserRole[];
   type: "missing" | "extra" | "valid";
 }) {
+  console.log("userRoles=====", userRoles);
   return (
     <div className="rounded-md border">
       <Table>
